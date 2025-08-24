@@ -98,5 +98,14 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::put('/bookings/{id}/approve', [BookingController::class, 'approve']);
     });
 });
+// review routes
+use App\Http\Controllers\API\ReviewController;
 
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/reviews', [ReviewController::class, 'store']);
+    Route::delete('/reviews/{id}', [ReviewController::class, 'destroy']);
+});
+
+// Public route to view reviews
+Route::get('/cars/{id}/reviews', [ReviewController::class, 'carReviews']);
 
