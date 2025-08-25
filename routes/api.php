@@ -103,9 +103,21 @@ use App\Http\Controllers\API\ReviewController;
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/reviews', [ReviewController::class, 'store']);
-    Route::delete('/reviews/{id}', [ReviewController::class, 'destroy']);
+    Route::get('/reviews', [ReviewController::class, 'index']);   // ✅ show all reviews
+    Route::delete('/reviews/{id}', [ReviewController::class, 'destroy']); // ✅ delete review
 });
 
-// Public route to view reviews
+// Public route to see reviews of a specific car
 Route::get('/cars/{id}/reviews', [ReviewController::class, 'carReviews']);
 
+
+// queries routes
+use App\Http\Controllers\API\QueriesController;
+
+Route::apiResource('contact-info', QueriesController::class);
+
+// dashboard routes
+
+use App\Http\Controllers\API\AdminDashboardController;
+
+Route::get('/admin/dashboard', [AdminDashboardController::class, 'index']);

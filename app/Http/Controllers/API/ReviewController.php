@@ -1,5 +1,4 @@
 <?php
-
 // app/Http/Controllers/API/ReviewController.php
 namespace App\Http\Controllers\API;
 
@@ -11,7 +10,7 @@ use Illuminate\Support\Facades\Auth;
 
 class ReviewController extends Controller
 {
-    // Add a review
+    // ✅ Add a review
     public function store(Request $request)
     {
         $request->validate([
@@ -20,10 +19,10 @@ class ReviewController extends Controller
             'comment' => 'nullable|string',
         ]);
 
-        // ✅ Ensure user has rented this car before reviewing
+        // Ensure user has rented this car before reviewing
         $hasRented = Booking::where('user_id', Auth::id())
             ->where('car_id', $request->car_id)
-            ->where('status', 'Approved') // only after approved rentals
+            ->where('status', 'Approved')
             ->exists();
 
         if (!$hasRented) {
@@ -43,7 +42,7 @@ class ReviewController extends Controller
         ], 201);
     }
 
-    // Get reviews for a car
+    // ✅ Get reviews for a specific car
     public function carReviews($carId)
     {
         $reviews = Review::where('car_id', $carId)
@@ -54,12 +53,22 @@ class ReviewController extends Controller
         return response()->json($reviews);
     }
 
-    // Optional: Delete review (Admin or Owner)
+    // ✅ Get ALL reviews (Admin or authorized user)
+    public function index()
+    {
+        $reviews = Review::with(['user:id,name,email', 'car:id,VehiclesTitle'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json($reviews);
+    }
+
+    // ✅ Delete a review (Owner or Admin)
     public function destroy($id)
     {
         $review = Review::findOrFail($id);
 
-        if (Auth::id() !== $review->user_id && !Auth::user()->is_admin) {
+        if (Auth::id() !== $review->user_id && !(Auth::user()->is_admin ?? false)) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
