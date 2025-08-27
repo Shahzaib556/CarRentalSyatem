@@ -121,3 +121,16 @@ Route::apiResource('contact-info', QueriesController::class);
 use App\Http\Controllers\API\AdminDashboardController;
 
 Route::get('/admin/dashboard', [AdminDashboardController::class, 'index']);
+
+
+// brands routes
+
+use App\Http\Controllers\API\BrandController;
+
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::get('/brands', [BrandController::class, 'index']);
+    Route::post('/brands', [BrandController::class, 'store']);
+    Route::get('/brands/{id}', [BrandController::class, 'show']);
+    Route::put('/brands/{id}', [BrandController::class, 'update']);
+    Route::delete('/brands/{id}', [BrandController::class, 'destroy']);
+});

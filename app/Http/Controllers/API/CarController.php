@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
@@ -10,10 +9,15 @@ use Illuminate\Support\Facades\Storage;
 
 class CarController extends Controller
 {
-    // Get all cars
+    // Get all cars with brand details
     public function index()
     {
-        return response()->json(Car::all());
+        $cars = Car::with('brand')->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $cars
+        ]);
     }
 
     // Store new car
@@ -21,7 +25,7 @@ class CarController extends Controller
     {
         $data = $request->validate([
             'CarTitle' => 'required|string|max:150',
-            'CarBrand' => 'nullable|integer',
+            'CarBrand' => 'nullable|integer|exists:tblbrands,id',
             'CarOverview' => 'nullable|string',
             'PricePerDay' => 'required|integer',
             'FuelType' => 'nullable|string|max:100',
@@ -36,22 +40,47 @@ class CarController extends Controller
 
         $car = Car::create($data);
 
-        return response()->json(['message' => 'Car created successfully', 'car' => $car]);
+        return response()->json([
+            'success' => true,
+            'message' => 'Car created successfully',
+            'data' => $car->load('brand')
+        ], 201);
     }
 
     // Show single car
     public function show($id)
     {
-        return response()->json(Car::findOrFail($id));
+        $car = Car::with('brand')->find($id);
+
+        if (!$car) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Car not found'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $car
+        ]);
     }
 
     // Update car
     public function update(Request $request, $id)
     {
-        $car = Car::findOrFail($id);
+        $car = Car::find($id);
+
+        if (!$car) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Car not found'
+            ], 404);
+        }
 
         $data = $request->validate([
             'CarTitle' => 'sometimes|string|max:150',
+            'CarBrand' => 'sometimes|integer|exists:tblbrands,id',
+            'CarOverview' => 'sometimes|string',
             'PricePerDay' => 'sometimes|integer',
             'FuelType' => 'sometimes|string|max:100',
             'ModelYear' => 'sometimes|integer',
@@ -68,13 +97,24 @@ class CarController extends Controller
 
         $car->update($data);
 
-        return response()->json(['message' => 'Car updated successfully', 'car' => $car]);
+        return response()->json([
+            'success' => true,
+            'message' => 'Car updated successfully',
+            'data' => $car->load('brand')
+        ]);
     }
 
     // Delete car
     public function destroy($id)
     {
-        $car = Car::findOrFail($id);
+        $car = Car::find($id);
+
+        if (!$car) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Car not found'
+            ], 404);
+        }
 
         if ($car->Image1) {
             Storage::disk('public')->delete($car->Image1);
@@ -82,6 +122,9 @@ class CarController extends Controller
 
         $car->delete();
 
-        return response()->json(['message' => 'Car deleted successfully']);
+        return response()->json([
+            'success' => true,
+            'message' => 'Car deleted successfully'
+        ]);
     }
 }

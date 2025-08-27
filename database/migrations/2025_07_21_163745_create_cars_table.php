@@ -9,7 +9,11 @@ return new class extends Migration {
         Schema::create('tblcars', function (Blueprint $table) {
             $table->id();
             $table->string('CarTitle', 150)->nullable();
+
+            // Foreign key to tblbrands
             $table->unsignedBigInteger('CarBrand')->nullable();
+            $table->foreign('CarBrand')->references('id')->on('tblbrands')->onDelete('cascade');
+
             $table->longText('CarOverview')->nullable();
             $table->integer('PricePerDay')->nullable();
             $table->string('FuelType', 100)->nullable();

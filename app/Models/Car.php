@@ -20,19 +20,16 @@ class Car extends Model
         'ModelYear',
         'SeatingCapacity',
         'Image1', 'Image2', 'Image3', 'Image4', 'Image5',
-        'AirConditioner',
-        'PowerDoorLocks',
-        'AntiLockBrakingSystem',
-        'BrakeAssist',
-        'PowerSteering',
-        'DriverAirbag',
-        'PassengerAirbag',
-        'PowerWindows',
-        'CDPlayer',
-        'CentralLocking',
-        'CrashSensor',
-        'LeatherSeats',
+        'AirConditioner', 'PowerDoorLocks', 'AntiLockBrakingSystem', 'BrakeAssist',
+        'PowerSteering', 'DriverAirbag', 'PassengerAirbag', 'PowerWindows', 'CDPlayer',
+        'CentralLocking', 'CrashSensor', 'LeatherSeats',
     ];
 
-    public $timestamps = false; // we use RegDate & UpdationDate instead
+    public $timestamps = false; // Using RegDate & UpdationDate instead
+
+    // Relation: One car belongs to one brand
+    public function brand()
+    {
+        return $this->belongsTo(Brand::class, 'CarBrand');
+    }
 }
