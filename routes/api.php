@@ -69,12 +69,10 @@ Route::prefix('admin/auth')->group(function () {
 /*------------------------------------------
 | Authenticated Admin Routes
 |------------------------------------------*/
-// Route::middleware(['auth:sanctum', 'ability:admin:access'])->group(function () {
     // Admin dashboard
     // Route::get('/admin/dashboard', fn() => response()->json(['message' => 'Welcome Admin']));
 
     // Routes for admins only
-    //  Route::middleware(['auth:sanctum', 'ability:admin:access'])->group(function () {
     // Create new car
     Route::post('/post-car', [CarController::class, 'store']);
 
@@ -104,20 +102,18 @@ Route::prefix('admin/auth')->group(function () {
     });
 
     // review routes
-    Route::get('/show-reviews', [ReviewController::class, 'index']);   // ✅ show all reviews
-    Route::delete('/delete-reviews/{id}', [ReviewController::class, 'destroy']); // ✅ delete review
+    Route::get('/show-reviews', [ReviewController::class, 'index']); 
+    Route::delete('/delete-reviews/{id}', [ReviewController::class, 'destroy']); 
     // Add other admin-only routes here
-// });
+
 
 
 // brands routes
-// Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/show-brands', [BrandController::class, 'index']);
     Route::post('/create-brands', [BrandController::class, 'store']);
     Route::get('/show-brands/{id}', [BrandController::class, 'show']);
     Route::put('/update-brand/{id}', [BrandController::class, 'update']);
     Route::delete('/delete-brand/{id}', [BrandController::class, 'destroy']);
-// });
 
 
 // queries routes
