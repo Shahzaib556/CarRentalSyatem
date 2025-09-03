@@ -21,6 +21,8 @@ Route::prefix('auth')->group(function () {
     Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 });
 
+
+
 /*------------------------------------------
 | Authenticated Public User Routes
 |------------------------------------------*/
@@ -41,7 +43,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/made-review', [ReviewController::class, 'store']);
     });
 
-    // Auth routes
+    // Auth logout route for both Admin and User
     Route::post('auth/logout', [AuthController::class, 'logout']);
 
     // Public route to see reviews of a specific car

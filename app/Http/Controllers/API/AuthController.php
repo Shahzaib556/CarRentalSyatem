@@ -55,7 +55,6 @@ class AuthController extends Controller
         }
 
         $token = $user->createToken('user-token', ['user-access'])->plainTextToken;
-        // $token = $user->createToken('user-token', ['user-access']);
 
         return response()->json([
             'message' => 'Login successful',
@@ -65,10 +64,65 @@ class AuthController extends Controller
     }
 
     // Logout (for both user and admin tokens)
-    public function logout(Request $request) {
+    public function logout(Request $request) 
+    {
+    if ($request->user()) 
+        {
         $request->user()->currentAccessToken()->delete();
         return response()->json(['message' => 'Logged out successfully.']);
+        }
+
+    return response()->json(['message' => 'Not authenticated'], 401);
     }
+
+
+    // Validate email + phone for password reset
+    public function forgotPassword(Request $request) {
+    $request->validate([
+        'email' => 'required|email',
+        'phone' => 'required|string',
+    ]);
+
+    $user = User::where('email', $request->email)
+                ->where('phone', $request->phone)
+                ->first();
+
+    if (!$user) {
+        return response()->json([
+            'message' => 'No user found with this email and phone number.'
+        ], 404);
+    }
+
+    // User exists → validation successful
+    return response()->json([
+        'message' => 'Validation successful. You can reset your password.'
+    ]);
+    }
+
+    // Reset the password
+    public function resetPassword(Request $request) {
+    $request->validate([
+        'email' => 'required|email',
+        'password' => 'required|min:6|confirmed', 
+    ]);
+
+    $user = User::where('email', $request->email)->first();
+
+    if (!$user) {
+        return response()->json([
+            'message' => 'User not found.'
+        ], 404);
+    }
+
+    $user->password = bcrypt($request->password);
+    $user->save();
+
+    return response()->json([
+        'message' => 'Password has been reset successfully.'
+    ]);
+}
+
+
 
     // Send Reset Link (for users only)
     public function sendResetLink(Request $request) {
