@@ -29,4 +29,4 @@ It is built with **Laravel** and provides a secure RESTful API for the ReactJS f
 ### 1. Clone the repository
 ```bash
 git clone https://github.com/Shahzaib556/CarRentalSyatem.git
-cd wheels-on-demand-backend
+cd wheels-on-demand-backend.
