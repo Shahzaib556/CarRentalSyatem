@@ -24,7 +24,9 @@ class User extends Authenticatable
     'password',
     'phone',
     'address',
-    'license_document',
+    'city',
+    'country',
+    'profile_image',
 ];
 
 

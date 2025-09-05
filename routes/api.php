@@ -10,6 +10,7 @@ use App\Http\Controllers\API\QueriesController;
 use App\Http\Controllers\API\ReviewController;
 use App\Http\Controllers\API\AdminDashboardController;
 use App\Http\Controllers\API\BrandController;
+use App\Http\Controllers\API\ContactInfoController;
 
 /*------------------------------------------
 | Public User Routes
@@ -46,8 +47,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Auth logout route for both Admin and User
     Route::post('auth/logout', [AuthController::class, 'logout']);
 
-    // Public route to see reviews of a specific car
-    Route::get('/cars/{id}/reviews', [ReviewController::class, 'carReviews']);
+    // // Public route to see reviews of a specific car
+    // Route::get('/cars/{id}/reviews', [ReviewController::class, 'carReviews']);
 
 });
 
@@ -93,20 +94,38 @@ Route::prefix('admin/auth')->group(function () {
 
 
     // Bookings Routes
-    Route::post('/bookings', [BookingController::class, 'store']);
-    Route::put('/bookings/{id}/cancel', [BookingController::class, 'cancel']);
-    Route::get('/bookings/{id}/status', [BookingController::class, 'status']);
+    Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/bookings', [BookingController::class, 'store']);   // User booking
+    Route::get('/my-bookings', [BookingController::class, 'myBookings']); // User's bookings
+    Route::get('/bookings/{id}/status', [BookingController::class, 'status']); // Booking status
+    Route::put('/bookings/{id}/cancel', [BookingController::class, 'cancel']); // Cancel booking
 
     // Admin only
-    Route::middleware('is_admin')->group(function () {
-        Route::get('/bookings', [BookingController::class, 'index']);
-        Route::put('/bookings/{id}/approve', [BookingController::class, 'approve']);
+    Route::middleware('admin')->group(function () {
+        Route::get('/bookings', [BookingController::class, 'index']); // All bookings
+        Route::put('/bookings/{id}/approve', [BookingController::class, 'approve']); // Approve booking
     });
+});
+
 
     // review routes
-    Route::get('/show-reviews', [ReviewController::class, 'index']); 
-    Route::delete('/delete-reviews/{id}', [ReviewController::class, 'destroy']); 
-    // Add other admin-only routes here
+    // use App\Http\Controllers\API\ReviewController;
+
+// Grouped under auth:sanctum → only logged-in users can add/update/delete reviews
+Route::middleware('auth:sanctum')->group(function () {
+    // Create a new review
+    Route::post('/reviews', [ReviewController::class, 'store']);
+
+    // Update own review
+    Route::put('/reviews/{id}', [ReviewController::class, 'update']);
+
+    // Delete own review
+    Route::delete('/reviews/{id}', [ReviewController::class, 'destroy']);
+});
+
+// Public routes → anyone can see reviews
+Route::get('/reviews', [ReviewController::class, 'index']);
+
 
 
 
@@ -119,11 +138,26 @@ Route::prefix('admin/auth')->group(function () {
 
 
 // queries routes
-Route::apiResource('contact-info', QueriesController::class); //not working
+
+// Public: anyone can post a query
+Route::post('/queries', [QueriesController::class, 'store']);
+
+// Admin/User: require authentication for managing queries
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/queries', [QueriesController::class, 'index']);       // list all queries
+    Route::get('/queries/{id}', [QueriesController::class, 'show']);   // view single query
+    // Route::put('/queries/{id}', [QueriesController::class, 'update']); // update query
+    Route::delete('/queries/{id}', [QueriesController::class, 'destroy']); // delete query
+});
+
 
 
 // dashboard routes
 Route::get('/admin/dashboard', [AdminDashboardController::class, 'index']); //not working
+
+
+// contactinfo routes
+Route::apiResource('contactinfo', ContactInfoController::class);
 
 
 

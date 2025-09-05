@@ -11,7 +11,7 @@ class AddProfileFieldsToUsersTable extends Migration
         Schema::table('users', function (Blueprint $table) {
             $table->string('phone')->nullable();
             $table->string('address')->nullable();
-            $table->string('license_document')->nullable(); // path to file
+            
         });
     }
 

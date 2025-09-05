@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('queries', function (Blueprint $table) {
             $table->id(); // Auto Increment Primary Key
-            $table->tinyText('Address')->nullable();
+        
             $table->string('EmailId', 255)->nullable();
             $table->char('ContactNo', 11)->nullable();
             $table->timestamps(); // created_at & updated_at

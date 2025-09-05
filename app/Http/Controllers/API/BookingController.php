@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Booking;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class BookingController extends Controller
 {
@@ -13,11 +14,14 @@ class BookingController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'car_id' => 'required|exists:cars,id',
-            'start_date' => 'required|date|after_or_equal:today',
-            'end_date' => 'required|date|after_or_equal:start_date',
+            'car_id'      => 'required|exists:cars,id',
+            'start_date'  => 'required|date|after_or_equal:today',
+            'end_date'    => 'required|date|after_or_equal:start_date',
+            'message'     => 'nullable|string',
+            'receipt'     => 'nullable|string',
         ]);
 
+        // Check for overlapping bookings
         $overlap = Booking::where('car_id', $request->car_id)
             ->where('status', '!=', 'cancelled')
             ->where(function ($query) use ($request) {
@@ -34,11 +38,17 @@ class BookingController extends Controller
         }
 
         $booking = Booking::create([
-            'user_id' => Auth::id(),
-            'car_id' => $request->car_id,
-            'start_date' => $request->start_date,
-            'end_date' => $request->end_date,
-            'status' => 'pending',
+            'booking_no'   => 'BK-' . strtoupper(Str::random(8)), // Auto generate booking number
+            'user_id'      => Auth::id(),
+            'useremail'    => Auth::user()->email,
+            'car_id'       => $request->car_id,
+            'start_date'   => $request->start_date,
+            'end_date'     => $request->end_date,
+            'message'      => $request->message,
+            'receipt'      => $request->receipt,
+            'postingdate'  => now(),
+            'updationdate' => now(),
+            'status'       => 'pending',
         ]);
 
         return response()->json(['message' => 'Booking created', 'booking' => $booking]);
@@ -55,6 +65,7 @@ class BookingController extends Controller
     {
         $booking = Booking::findOrFail($id);
         $booking->status = 'approved';
+        $booking->updationdate = now();
         $booking->save();
 
         return response()->json(['message' => 'Booking approved', 'booking' => $booking]);
@@ -71,6 +82,7 @@ class BookingController extends Controller
         }
 
         $booking->status = 'cancelled';
+        $booking->updationdate = now();
         $booking->save();
 
         return response()->json(['message' => 'Booking cancelled', 'booking' => $booking]);
@@ -86,7 +98,10 @@ class BookingController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        return response()->json(['status' => $booking->status, 'booking' => $booking]);
+        return response()->json([
+            'status'  => $booking->status,
+            'booking' => $booking
+        ]);
     }
 
     // User: View own bookings

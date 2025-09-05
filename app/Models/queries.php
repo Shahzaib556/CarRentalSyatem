@@ -9,11 +9,17 @@ class queries extends Model
 {
     use HasFactory;
 
-    protected $table = 'tblcontactusinfo'; // custom table name
+    protected $table = 'tblqueries'; // your custom table name
 
     protected $fillable = [
-        'Address',
+        'name',
         'EmailId',
         'ContactNo',
+        'message',
+        'postingdate',
+        'updationdate',
+        'status',
     ];
+
+    public $timestamps = false; // disable if table has no created_at / updated_at
 }

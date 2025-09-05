@@ -1,63 +1,70 @@
 <?php
 // app/Http/Controllers/API/ReviewController.php
+
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\Review;
-use App\Models\Booking;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class ReviewController extends Controller
 {
-    // ✅ Add a review
+    // ✅ Add an overall review
     public function store(Request $request)
     {
         $request->validate([
-            'car_id' => 'required|exists:cars,id',
-            'rating' => 'required|integer|min:1|max:5',
-            'comment' => 'nullable|string',
+            'message' => 'required|string',
+            'status'  => 'nullable|string|in:pending,approved,rejected',
         ]);
 
-        // Ensure user has rented this car before reviewing
-        $hasRented = Booking::where('user_id', Auth::id())
-            ->where('car_id', $request->car_id)
-            ->where('status', 'Approved')
-            ->exists();
-
-        if (!$hasRented) {
-            return response()->json(['error' => 'You can only review cars you have rented.'], 403);
-        }
-
         $review = Review::create([
-            'user_id' => Auth::id(),
-            'car_id' => $request->car_id,
-            'rating' => $request->rating,
-            'comment' => $request->comment,
+            'user_id'       => Auth::id(),
+            'user_email'    => Auth::user()->email,
+            'message'       => $request->message,
+            'posting_date'  => Carbon::now(),
+            'updation_date' => null,
+            'status'        => $request->status ?? 'pending',
         ]);
 
         return response()->json([
             'message' => 'Review added successfully',
-            'review' => $review
+            'review'  => $review
         ], 201);
     }
 
-    // ✅ Get reviews for a specific car
-    public function carReviews($carId)
+    // ✅ Update review (only by owner)
+    public function update(Request $request, $id)
     {
-        $reviews = Review::where('car_id', $carId)
-            ->with('user:id,name')
-            ->latest()
-            ->get();
+        $review = Review::findOrFail($id);
 
-        return response()->json($reviews);
+        if (Auth::id() !== $review->user_id) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $request->validate([
+            'message' => 'nullable|string',
+            'status'  => 'nullable|string|in:pending,approved,rejected',
+        ]);
+
+        $review->update([
+            'message'       => $request->message ?? $review->message,
+            'updation_date' => Carbon::now(),
+            'status'        => $request->status ?? $review->status,
+        ]);
+
+        return response()->json([
+            'message' => 'Review updated successfully',
+            'review'  => $review
+        ]);
     }
 
-    // ✅ Get ALL reviews (Admin or authorized user)
+    // ✅ Get all reviews (public)
     public function index()
     {
-        $reviews = Review::with(['user:id,name,email', 'car:id,VehiclesTitle'])
-            ->orderBy('created_at', 'desc')
+        $reviews = Review::with('user:id,name,email')
+            ->orderBy('posting_date', 'desc')
             ->get();
 
         return response()->json($reviews);
