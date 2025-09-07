@@ -51,12 +51,16 @@ class CarController extends Controller
     ]);
 
     // Handle image uploads
-    $imageFields = ['Image1', 'Image2', 'Image3', 'Image4', 'Image5'];
+$imageFields = ['Image1','Image2','Image3','Image4','Image5'];
     foreach ($imageFields as $field) {
         if ($request->hasFile($field)) {
-            $data[$field] = $request->file($field)->store('cars', 'public');
+            $filename = $request->file($field)->hashName();
+            $request->file($field)->storeAs('cars', $filename, 'public');
+            $data[$field] = 'cars/' . $filename; // store relative path
+            
         }
     }
+
 
     $car = Car::create($data);
 
@@ -106,14 +110,24 @@ class CarController extends Controller
             'ModelYear' => 'sometimes|integer',
             'SeatingCapacity' => 'sometimes|integer',
             'Image1' => 'nullable|image|mimes:jpg,jpeg,png|max:7048',
+            'Image2' => 'nullable|image|mimes:jpg,jpeg,png|max:7048',
+            'Image3' => 'nullable|image|mimes:jpg,jpeg,png|max:7048',
+            'Image4' => 'nullable|image|mimes:jpg,jpeg,png|max:7048',
+            'Image5' => 'nullable|image|mimes:jpg,jpeg,png|max:7048',
         ]);
 
-        if ($request->hasFile('Image1')) {
-            if ($car->Image1) {
-                Storage::disk('public')->delete($car->Image1);
+        $imageFields = ['Image1','Image2','Image3','Image4','Image5'];
+
+        foreach ($imageFields as $field) {
+        if ($request->hasFile($field)) {
+            if ($car->$field) {
+                Storage::disk('public')->delete($car->$field);
             }
-            $data['Image1'] = $request->file('Image1')->store('cars', 'public');
+            $filename = $request->file($field)->hashName();
+            $request->file($field)->storeAs('cars', $filename, 'public');
+            $data[$field] = 'cars/' . $filename; // store relative path
         }
+    }
 
         $car->update($data);
 

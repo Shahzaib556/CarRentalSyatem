@@ -10,9 +10,17 @@ class ContactInfoController extends Controller
 {
     // ✅ Get all contact info
     public function index()
-    {
-        return response()->json(ContactInfo::all(), 200);
+{
+    $contact = ContactInfo::first();
+
+    if (!$contact) {
+        return response()->json([
+            'message' => 'No contact info found'
+        ], 404);
     }
+
+    return response()->json($contact, 200);
+}
 
     // ✅ Get single record
     public function show($id)
@@ -28,10 +36,10 @@ class ContactInfoController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'address'      => 'nullable|string|max:255',
-            'map_location' => 'nullable|string|max:255',
-            'emailid'      => 'nullable|email|max:255',
-            'contactno'    => 'nullable|string|max:20',
+            'address'      => 'required|string|max:255',
+            'map_location' => 'required|string|max:255',
+            'emailid'      => 'required|email|max:255',
+            'contactno'    => 'required|string|max:11',
         ]);
 
         $contact = ContactInfo::create($request->all());
@@ -42,28 +50,34 @@ class ContactInfoController extends Controller
         ], 201);
     }
 
-    // ✅ Update contact info
-    public function update(Request $request, $id)
-    {
-        $contact = ContactInfo::find($id);
-        if (!$contact) {
-            return response()->json(['message' => 'Record not found'], 404);
-        }
+    // ✅ Update contact info (for only one record in table max)
+public function update(Request $request)
+{
+    $request->validate([
+        'address'      => 'required|string|max:255',
+        'map_location' => 'required|string|max:255',
+        'emailid'      => 'required|email|max:255',
+        'contactno'    => 'required|string|max:20',
+    ]);
 
-        $request->validate([
-            'address'      => 'nullable|string|max:255',
-            'map_location' => 'nullable|string|max:255',
-            'emailid'      => 'nullable|email|max:255',
-            'contactno'    => 'nullable|string|max:20',
-        ]);
+    // Get the first record
+    $contact = ContactInfo::first();
 
+    if (!$contact) {
+        // No record exists → create first
+        $contact = ContactInfo::create($request->all());
+    } else {
+        // Update existing
         $contact->update($request->all());
-
-        return response()->json([
-            'message' => 'Contact info updated successfully',
-            'data'    => $contact
-        ], 200);
     }
+
+    return response()->json([
+        'message' => 'Contact info updated successfully',
+        'data'    => $contact
+    ], 200);
+}
+
+
 
     // ✅ Delete contact info
     public function destroy($id)

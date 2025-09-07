@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Models\User; 
 use Illuminate\Support\Facades\Hash;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -33,7 +34,7 @@ class UserController extends Controller
             'address'       => 'nullable|string|max:255',
             'city'          => 'nullable|string|max:255',
             'country'       => 'nullable|string|max:255',
-            'profile_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'profile_image' => 'nullable|image|mimes:jpeg,png,jpg|max:7148',
         ]);
 
         // Handle profile image upload
@@ -88,6 +89,17 @@ class UserController extends Controller
         return response()->json([
             'message'             => 'User password updated successfully',
             'password_changed_at' => now()->toDateTimeString()
+        ]);
+    }
+
+    // Get all users with all columns
+    public function listAllUsers()
+    {
+        $users = User::all(); // fetch everything from the users table
+
+        return response()->json([
+            'status' => 'success',
+            'users'  => $users
         ]);
     }
 }

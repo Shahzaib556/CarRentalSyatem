@@ -25,58 +25,56 @@ class QueriesController extends Controller
         return response()->json($contact, 200);
     }
 
-    // ✅ Create new record
-    public function store(Request $request)
-    {
-        $request->validate([
-            'name'      => 'nullable|string|max:255',
-            'Address'   => 'nullable|string',
-            'EmailId'   => 'nullable|email|max:255',
-            'ContactNo' => 'nullable|string|max:11',
-            'message'   => 'nullable|string',
-            'status'    => 'nullable|string|in:pending,resolved,closed',
-        ]);
+        // ✅ Create new record (user submission)
+        public function store(Request $request)
+{
+  
+    $request->validate([
+    'name'      => 'required|string|max:255',
+    'EmailId'   => 'required|email|max:255',
+    'ContactNo' => 'required|string|max:11',
+    'message'   => 'required|string|max:255',
+    ]);
 
-        $data = $request->all();
-        $data['postingdate']  = Carbon::now();
-        $data['updationdate'] = null;
-        $data['status']       = $data['status'] ?? 'pending';
+    // Prepare data to insert
+    $data = $request->only(['name', 'EmailId', 'ContactNo', 'message']);
+    $data['status'] = 'pending';           // default status
+    $data['posting_date'] = now();         // current timestamp
 
-        $contact = Query::create($data);
+    // Insert into DB
+    $query = Query::create($data);
 
-        return response()->json([
-            'message' => 'Record created successfully',
-            'data'    => $contact
-        ], 201);
-    }
+    return response()->json([
+        'message' => 'Query submitted successfully',
+        'data'    => $query
+    ], 201);
+}
+
+
+
 
     // ✅ Update record
-    // public function update(Request $request, $id)
-    // {
-    //     $contact = Query::find($id);
-    //     if (!$contact) {
-    //         return response()->json(['message' => 'Record not found'], 404);
-    //     }
+   // Update record (mark as resolved)
+    public function update(Request $request, $id)
+    {
+        $contact = Query::find($id);
+        if (!$contact) {
+            return response()->json(['message' => 'Record not found'], 404);
+        }
 
-    //     $request->validate([
-    //         'name'      => 'nullable|string|max:255',
-    //         'Address'   => 'nullable|string',
-    //         'EmailId'   => 'nullable|email|max:255',
-    //         'ContactNo' => 'nullable|string|max:11',
-    //         'message'   => 'nullable|string',
-    //         'status'    => 'nullable|string|in:pending,resolved,closed',
-    //     ]);
+        $request->validate([
+            'status' => 'required|string|in:pending,resolved', // only these statuses
+        ]);
 
-    //     $data = $request->all();
-    //     $data['updationdate'] = Carbon::now();
+        $contact->status = $request->status;
+        $contact->save();
 
-    //     $contact->update($data);
+        return response()->json([
+            'message' => 'Query status updated successfully',
+            'data'    => $contact
+        ], 200);
+    }
 
-    //     return response()->json([
-    //         'message' => 'Record updated successfully',
-    //         'data'    => $contact
-    //     ], 200);
-    // }
 
     // ✅ Delete record
     public function destroy($id)
