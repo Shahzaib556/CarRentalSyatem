@@ -41,7 +41,20 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
         Route::get('/my-bookings', [BookingController::class, 'myBookings']);
 
-        Route::post('/made-review', [ReviewController::class, 'store']);
+        // Route::post('/made-review', [ReviewController::class, 'store']);
+
+            // Create a new review
+        Route::post('/post-review', [ReviewController::class, 'store']);
+
+        //  view all my reviews
+        Route::get('/my-reviews', [ReviewController::class, 'myReviews']);
+
+        // Update own review
+        Route::put('/update-review/{id}', [ReviewController::class, 'userUpdateMessage']);
+
+        // Delete own review
+        Route::delete('/delete-review/{id}', [ReviewController::class, 'destroy']);
+        
     });
 
     // Auth logout route for both Admin and User
@@ -74,25 +87,25 @@ Route::prefix('admin/auth')->group(function () {
 |------------------------------------------*/
 
     //------- dashboard routes ------- 
-    Route::get('/admin-dashboard', [AdminDashboardController::class, 'index']); 
+Route::get('/admin-dashboard', [AdminDashboardController::class, 'index']); 
 
     // Create new car
-    Route::post('/post-car', [CarController::class, 'store']);
+Route::post('/post-car', [CarController::class, 'store']);
 
     // List all cars
-    Route::get('/show-cars', [CarController::class, 'index']);
+Route::get('/show-cars', [CarController::class, 'index']);
 
     // View single car
-    Route::get('/show-car/{id}', [CarController::class, 'show']);
+Route::get('/show-car/{id}', [CarController::class, 'show']);
 
     // Update existing car
-      Route::put('/update-car/{id}', [CarController::class, 'update']);
+Route::put('/update-car/{id}', [CarController::class, 'update']);
 
     // Delete car
-      Route::delete('/delete-car/{id}', [CarController::class, 'destroy']);
-    
-      // Show all users
-    Route::get('/users', [UserController::class, 'listAllUsers']);
+Route::delete('/delete-car/{id}', [CarController::class, 'destroy']);
+
+    // Show all users
+Route::get('/users', [UserController::class, 'listAllUsers']);
 
 
     // ------------ Bookings Routes --------- //
@@ -100,8 +113,11 @@ Route::prefix('admin/auth')->group(function () {
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/post-booking', [BookingController::class, 'store']);   // User booking
     Route::get('/my-bookings', [BookingController::class, 'myBookings']); // User's bookings
-
 });
+// Route for cheching Car Availability
+Route::get('/check-availability/{vehicleId}', [BookingController::class, 'checkAvailability']);
+
+
 
 //Routes to be used on admin side
 Route::get('/booking-status/{id}/status', [BookingController::class, 'status']); 
@@ -113,35 +129,28 @@ Route::get('/canceled-bookings', [BookingController::class, 'cancelledBookings']
 Route::get('/approved-bookings', [BookingController::class, 'approvedBookings']);
 // Get a specific booking by ID
 Route::get('/show-booking/{id}', [BookingController::class, 'show']);
+// Update status of review
+Route::put('/update-review/{id}/status', [ReviewController::class, 'adminUpdateStatus']);
+// Public & Admin will see whole review details
+Route::get('/view-reviews', [ReviewController::class, 'index']);
+// Admin can update the paid amount of booking
+Route::put('/booking/{id}/update-paid', [BookingController::class, 'updatePaidAmount']);
 
 
         // --------review routes ----------//
-
-// Grouped under auth:sanctum → only logged-in users can add/update/delete reviews
-Route::middleware('auth:sanctum')->group(function () {
-    // Create a new review
-    Route::post('/reviews', [ReviewController::class, 'store']);
-
-    // Update own review
-    Route::put('/reviews/{id}', [ReviewController::class, 'update']);
-
-    // Delete own review
-    Route::delete('/reviews/{id}', [ReviewController::class, 'destroy']);
-});
-
-// Public routes → anyone can see reviews
-Route::get('/reviews', [ReviewController::class, 'index']);
-
+// Public route to fetch only active reviews
+Route::get('/reviews/active', [ReviewController::class, 'activeReviews']);
 
 
 
         //-------- brands routes---------//
 
-    Route::get('/show-brands', [BrandController::class, 'index']);
-    Route::post('/create-brands', [BrandController::class, 'store']);
-    Route::get('/show-brands/{id}', [BrandController::class, 'show']);
-    Route::put('/update-brand/{id}', [BrandController::class, 'update']);
-    Route::delete('/delete-brand/{id}', [BrandController::class, 'destroy']);
+Route::get('/show-brands', [BrandController::class, 'index']);
+Route::post('/create-brands', [BrandController::class, 'store']);
+Route::get('/show-brands/{id}', [BrandController::class, 'show']);
+Route::put('/update-brand/{id}', [BrandController::class, 'update']);
+Route::delete('/delete-brand/{id}', [BrandController::class, 'destroy']);
+
 
 
     //--------- queries routes -------------//
@@ -149,13 +158,10 @@ Route::get('/reviews', [ReviewController::class, 'index']);
 // Public: anyone can post a query
 Route::post('/queries', [QueriesController::class, 'store']);
 
-// Admin/User: require authentication for managing queries
-// Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/queries', [QueriesController::class, 'index']);       // list all queries
-    Route::get('/queries/{id}', [QueriesController::class, 'show']);   // view single query
-    Route::put('/queries/{id}', [QueriesController::class, 'update']); // update query
-    Route::delete('/queries/{id}', [QueriesController::class, 'destroy']); // delete query
-// });
+Route::get('/queries', [QueriesController::class, 'index']);       // list all queries
+Route::get('/queries/{id}', [QueriesController::class, 'show']);   // view single query
+Route::put('/queries/{id}', [QueriesController::class, 'update']); // update query
+Route::delete('/queries/{id}', [QueriesController::class, 'destroy']); // delete query
 
 
 
@@ -167,7 +173,6 @@ Route::get('contactinfo', [ContactInfoController::class, 'index']);
 // Update contact info (create if missing)
 Route::put('contactinfo', [ContactInfoController::class, 'update']);
 
-// Route::apiResource('contactinfo', ContactInfoController::class);
 
 
 

@@ -54,6 +54,7 @@ class BookingController extends Controller
         'message'    => $request->message,
         'receipt'    => $receiptPath,
         'status'     => 'pending',
+        'paid_amount'=> 0,
     ]);
 
     return response()->json(['message' => 'Booking created', 'booking' => $booking]);
@@ -183,6 +184,62 @@ public function cancelledBookings()
             'booking' => $booking
         ]);
     }
+
+    // Admin: Update paid amount
+    public function updatePaidAmount(Request $request, $id)
+    {
+        $request->validate([
+            'paid_amount' => 'required|numeric|min:0'
+        ]);
+
+        $booking = Booking::findOrFail($id);
+        $booking->paid_amount = $request->paid_amount;
+        $booking->save();
+
+        return response()->json([
+            'message' => 'Paid amount updated'
+        ]);
+    }
+
+public function checkAvailability(Request $request, $carId)
+{
+    if (!$request->has('start_date') || !$request->has('end_date')) {
+        return response()->json([
+            'available' => false,
+            'message'   => 'Start and end date are required'
+        ], 400);
+    }
+
+    $startDate = \Carbon\Carbon::parse($request->query('start_date'))->startOfDay();
+    $endDate   = \Carbon\Carbon::parse($request->query('end_date'))->endOfDay();
+
+    $conflict = Booking::where('car_id', $carId)
+        ->whereIn('status', ['pending', 'approved'])
+        ->where(function ($query) use ($startDate, $endDate) {
+            $query->where(function ($q) use ($startDate, $endDate) {
+                // 🔴 If requested period overlaps with existing booking
+                $q->where('start_date', '<=', $endDate)
+                  ->where('end_date', '>=', $startDate);
+            });
+        })
+        ->first();
+
+    if ($conflict) {
+        return response()->json([
+            'available'    => false,
+            'message'      => "Car is already booked from {$conflict->start_date} to {$conflict->end_date}",
+            'booked_until' => $conflict->end_date
+        ], 409);
+    }
+
+    return response()->json([
+        'available' => true,
+        'message'   => 'Car is available for the selected dates'
+    ]);
+}
+
+
+
 
 
 }

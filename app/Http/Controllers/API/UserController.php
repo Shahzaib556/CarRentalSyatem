@@ -29,11 +29,21 @@ class UserController extends Controller
         $user = $request->user();
 
         $request->validate([
-            'name'          => 'nullable|string|max:255',
-            'phone'         => 'nullable|string|max:20',
-            'address'       => 'nullable|string|max:255',
-            'city'          => 'nullable|string|max:255',
-            'country'       => 'nullable|string|max:255',
+            'name'          => 'required|string|max:25',
+            'phone'         => 'required|string|max:11',
+            'address'       => 'required|string|max:255',
+            'city'          => 'required|string|max:20',
+            'country'       => 'required|string|max:20',
+            'cnic'          => ['required','string','max:15','regex:/^\d{5}-\d{7}-\d{1}$/','unique:users,cnic,' . $user->id,],
+
+            'guarantor_a_name'      => 'required|string|max:20',
+            'guarantor_a_cnic'      => ['required','string','max:15','regex:/^\d{5}-\d{7}-\d{1}$/',],
+            'guarantor_a_phone'     => 'required|string|max:11',
+
+            'guarantor_b_name'      => 'required|string|max:20',
+            'guarantor_b_cnic'      => ['required','string','max:15','regex:/^\d{5}-\d{7}-\d{1}$/',],
+            'guarantor_b_phone'     => 'required|string|max:11',
+            
             'profile_image' => 'nullable|image|mimes:jpeg,png,jpg|max:7148',
         ]);
 
@@ -46,8 +56,22 @@ class UserController extends Controller
             $user->profile_image = $path;
         }
 
-        // Update other fields
-        $user->fill($request->only('name', 'phone', 'address', 'city', 'country'));
+            // Update other fields
+            $user->fill($request->only(
+            'name',
+            'phone',
+            'address',
+            'city',
+            'country',
+            'cnic',
+            'guarantor_a_name',
+            'guarantor_a_cnic',
+            'guarantor_a_phone',
+            'guarantor_b_name',
+            'guarantor_b_cnic',
+            'guarantor_b_phone'
+        ));
+
         $user->save();
 
         return response()->json([

@@ -15,10 +15,10 @@ class AuthController extends Controller
     // Register User (only for regular users)
     public function register(Request $request) {
         $request->validate([
-            'name'     => 'required|string|max:100',
+            'name'     => 'required|string|max:25',
             'email'    => 'required|email|unique:users',
             'password' => 'required|min:6|confirmed',
-            'phone'    => 'required|string|max:20',
+            'phone'    => 'required|string|max:11',
         ]);
 
         $user = User::create([
@@ -26,7 +26,6 @@ class AuthController extends Controller
             'email'    => $request->email,
             'password' => bcrypt($request->password),
             'phone'    => $request->phone,
-            'role'     => 'user', // Keep this if you still have roles for users
         ]);
 
         return response()->json(['message' => 'User registered successfully.'], 201);

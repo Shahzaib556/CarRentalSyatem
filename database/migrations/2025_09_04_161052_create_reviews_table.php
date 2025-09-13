@@ -14,7 +14,7 @@ return new class extends Migration {
             $table->text('message');
             $table->dateTime('posting_date')->nullable();
             $table->dateTime('updation_date')->nullable();
-            $table->string('status')->default('pending'); // pending, approved, rejected
+            $table->string('status')->default('pending'); // 
             $table->timestamps();
 
             // foreign key to users table
